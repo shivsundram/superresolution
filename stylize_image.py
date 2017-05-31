@@ -57,7 +57,7 @@ def ffwd(content, network_path):
         img_placeholder = tf.placeholder(tf.float32, shape=content.shape,
                                          name='img_placeholder')
 
-        network = transform.net(img_placeholder)
+        network = transform.netSuper(img_placeholder)
         saver = tf.train.Saver()
 
         ckpt = tf.train.get_checkpoint_state(network_path)

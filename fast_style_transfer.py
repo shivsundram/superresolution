@@ -19,7 +19,11 @@ class LossCalculator:
         self.transform_loss_net = vgg.net(vgg.preprocess(stylized_image))
 
     def content_loss(self, content_input_batch, content_layer, content_weight):
+        #print("batch size dim", content_input_batch[0].shape)
+        content_input_batch = tf.image.resize_bicubic(content_input_batch, [128,128])
         content_loss_net = self.vgg.net(self.vgg.preprocess(content_input_batch))
+        #print("transform shape", self.transform_loss_net[content_layer].get_shape())
+        #print ("cont loss shape",content_loss_net[content_layer].get_shape())
         return content_weight * (2 * tf.nn.l2_loss(
                 content_loss_net[content_layer] - self.transform_loss_net[content_layer]) /
                 (_tensor_size(content_loss_net[content_layer])))
@@ -67,7 +71,8 @@ class LossCalculator:
         batch_size, height, width, number = map(lambda i: i.value, image_feature.get_shape())
         size = height * width * number
         image_feature = tf.reshape(image_feature, (batch_size, height * width, number))
-        return tf.batch_matmul(tf.transpose(image_feature, perm=[0,2,1]), image_feature) / size
+        #return tf.batch_matmul(tf.transpose(image_feature, perm=[0,2,1]), image_feature) / size
+        return tf.matmul(tf.transpose(image_feature, perm=[0,2,1]), image_feature) / size
 
 
 
@@ -88,7 +93,10 @@ class FastStyleTransfer:
                                               shape=self.batch_shape,
                                               name="input_batch")
 
-            self.stylized_image = transform.net(self.input_batch)
+            print("input shape", self.input_batch.get_shape())
+            self.input_batch= tf.image.resize_bicubic(self.input_batch, [128,128])
+
+            self.stylized_image = transform.netSuper(self.input_batch)
 
             loss_calculator = LossCalculator(vgg, self.stylized_image)
 
@@ -118,7 +126,7 @@ class FastStyleTransfer:
         return losses
 
     def train(self, content_training_images,learning_rate,
-              epochs, checkpoint_iterations):
+              epochs, checkpoint_iterations,save_path, restore):
 
         def is_checkpoint_iteration(i):
             return (checkpoint_iterations and i % checkpoint_iterations == 0)
@@ -127,15 +135,32 @@ class FastStyleTransfer:
             stdout.write('Iteration %d\n' % (i + 1))
 
         train_step = tf.train.AdamOptimizer(learning_rate).minimize(self.loss)
+        saver = tf.train.Saver()
 
         with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
+            if restore:
+                saver.restore(sess, save_path+"/fast_style_network.ckpt'")
+            else:
+                sess.run(tf.global_variables_initializer())
+
+            saver = tf.train.Saver()
             iterations = 0
+            #samples = np.random.random_integers(0,len(content_training_images)-4,10000)
+            samples=range(1000*self.batch_size-self.batch_size)
+            print("samples", len(content_training_images))
             for epoch in range(epochs):
-                for i in range(0, len(content_training_images), self.batch_size):
+                for i in range(0, 1000, self.batch_size):
                     print_progress(iterations)
 
-                    batch = self._load_batch(content_training_images[i: i+self.batch_size])
+                    batch = self._load_batch(content_training_images[samples[i]: samples[i]+self.batch_size])
+                    #print ("batch type", type(batch), batch.shape)
+                    #a= [i.shape for i in batch]
+                    #print (a)
+                    #resize coco to have uniform dims, pictures in coco have different dims
+                    #ize_tensor = tf.constant(np.array([256,256]))
+                    #batch2 = tf.image.resize_bicubic(batch, size_tensor)
+                    #batch=batch2
+
 
                     train_step.run(feed_dict={self.input_batch:batch})
 
@@ -146,6 +171,9 @@ class FastStyleTransfer:
                             self.stylized_image.eval(feed_dict={self.input_batch:batch})[0],
                             self._current_loss({self.input_batch:batch})
                        )
+                    if i%10:
+                        loss=self._current_loss({self.input_batch:batch})
+                        print(loss)
                     iterations += 1
 
     def _load_batch(self, image_paths):

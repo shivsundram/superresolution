@@ -21,9 +21,55 @@ def net(image):
     output = image + preds
     return tf.nn.tanh(output) * 127.5 + 255./2
 
+def netSuper(image):
+    #input x72x72
+    image = image / 255.0
+    image = tf.image.resize_bicubic(image, [32, 32])
 
+    conv1 = _conv_layer(image, 64, 9, 1)
+
+    #print("conv1", conv1.get_shape() )
+    resid1 = _residual_block2(conv1, 3)
+    #print("resid1shape", resid1.get_shape())
+    resid2 = _residual_block2(resid1, 3)
+    #print("resid2shape", resid2.get_shape())
+    resid3 = _residual_block2(resid2, 3)
+    #print("resid3shape", resid3.get_shape())
+    resid4 = _residual_block2(resid3, 3)
+    #print("resid4shape", resid4.get_shape())
+
+
+    #_conv_tranpose_layer(net, num_filters, filter_size, strides):
+    #resid4 = tf.image.resize_bilinear(resid4, [144, 144])
+    #print("resid4RESIZEshape", resid4.get_shape())
+    conv_t1 = _conv_tranpose_layer(resid4, 64, 3, 2)
+
+    #conv_t1 = tf.image.resize_bilinear(conv_t1, [288, 288])
+    #print("conv_t1RESIZEshape", conv_t1.get_shape())
+    conv_t2 = _conv_tranpose_layer(conv_t1, 64, 3, 2)
+
+    conv_t3 = _conv_tranpose_layer(conv_t2, 3, 9, 1)
+    #print("final shape", conv_t3.get_shape())
+
+    preds = tf.nn.tanh(conv_t3)
+    print("preds", preds.get_shape())
+    #output = image + preds
+    output =preds
+    return tf.nn.tanh(output) * 127.5 + 255./2
+
+#python train_network.py --style=examples/starry-night-van-gogh.jpg --train-path=/home/shivsundram/train2014 --save-path=./checkpoint
 
 def _conv_layer(net, num_filters, filter_size, strides, relu=True):
+    weights_init = _conv_init_vars(net, num_filters, filter_size)
+    strides_shape = [1, strides, strides, 1]
+    net = tf.nn.conv2d(net, weights_init, strides_shape, padding='SAME')
+    net = _instance_norm(net)
+    if relu:
+        net = tf.nn.relu(net)
+
+    return net
+
+def _conv_layer2(net, num_filters, filter_size, strides, relu=True):
     weights_init = _conv_init_vars(net, num_filters, filter_size)
     strides_shape = [1, strides, strides, 1]
     net = tf.nn.conv2d(net, weights_init, strides_shape, padding='SAME')
@@ -40,7 +86,7 @@ def _conv_tranpose_layer(net, num_filters, filter_size, strides):
     new_rows, new_cols = int(rows * strides), int(cols * strides)
 
     new_shape = [batch_size, new_rows, new_cols, num_filters]
-    tf_shape = tf.pack(new_shape)
+    tf_shape = tf.stack(new_shape)
     strides_shape = [1,strides,strides,1]
 
     net = tf.nn.conv2d_transpose(net, weights_init, tf_shape, strides_shape, padding='SAME')
@@ -50,6 +96,10 @@ def _conv_tranpose_layer(net, num_filters, filter_size, strides):
 def _residual_block(net, filter_size=3):
     tmp = _conv_layer(net, 128, filter_size, 1)
     return net + _conv_layer(tmp, 128, filter_size, 1, relu=False)
+
+def _residual_block2(net, filter_size=3):
+    tmp = _conv_layer(net, 64, filter_size, 1)
+    return net + _conv_layer(tmp, 64, filter_size, 1, relu=False)
 
 def _instance_norm(net, train=True):
     batch, rows, cols, channels = [i.value for i in net.get_shape()]

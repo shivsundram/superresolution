@@ -24,7 +24,9 @@ def save_image(img, path):
 
 def get_files(img_dir):
     files = list_files(img_dir)
-    return map(lambda x: os.path.join(img_dir,x), files)
+    print (len(files), img_dir)#
+    a = map(lambda x: os.path.join(img_dir,x), files)
+    return list(a)
 
 def list_files(in_path):
     files = []

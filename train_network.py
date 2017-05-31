@@ -15,14 +15,16 @@ from argparse import ArgumentParser
 import tensorflow as tf
 
 CONTENT_WEIGHT = 1
-STYLE_WEIGHT = 5
+#STYLE_WEIGHT = 5
+STYLE_WEIGHT = 0
 TV_WEIGHT = 1e-6
 LEARNING_RATE = 1e-3
 NUM_EPOCHS=5
 BATCH_SIZE=4
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
-CHECKPOINT_ITERATIONS = 100
+CHECKPOINT_ITERATIONS = 10
 SAVE_PATH = 'network'
+SAVE_ITERATIONS =10
 
 def build_parser():
     parser = ArgumentParser()
@@ -79,6 +81,7 @@ def build_parser():
                         metavar='LEARNING_RATE', default=LEARNING_RATE)
 
     parser.add_argument('--use-gpu', dest='use_gpu', help='run on a GPU', action='store_true')
+    parser.add_argument('--restore', dest='restore', help='restore from file', action='store_true')
     parser.set_defaults(use_gpu=False)
 
     return parser
@@ -108,6 +111,7 @@ def main():
     style_image = np.ndarray.reshape(style_image, (1,) + style_image.shape)
 
     content_targets = utils.get_files(options.train_path)
+
     content_shape = utils.load_image(content_targets[0]).shape
 
     device = '/gpu:0' if options.use_gpu else '/cpu:0'
@@ -121,20 +125,25 @@ def main():
         tv_weight=options.style_weight,
         batch_size=options.batch_size,
         device=device)
+    print("restoring?", options.restore)
 
     for iteration, network, first_image, losses in style_transfer.train(
         content_training_images=content_targets,
         learning_rate=options.learning_rate,
         epochs=options.epochs,
-        checkpoint_iterations=options.checkpoint_iterations
+        checkpoint_iterations=options.checkpoint_iterations,
+        save_path = options.save_path + '/fast_style_network.ckpt',
+        restore=options.restore
     ):
         print_losses(losses)
 
         saver = tf.train.Saver()
-        if (iteration % 100 == 0):
-            saver.save(network, opts.save_path + '/fast_style_network.ckpt')
+        if (iteration % SAVE_ITERATIONS == 0):
+            print("saving")
+            saver.save(network, options.save_path + '/fast_style_network.ckpt')
+            print("saving")
 
-        saver.save(network, opts.save_path + '/fast_style_network.ckpt')
+        saver.save(network, options.save_path + '/fast_style_network.ckpt')
 
 
 def print_losses(losses):
@@ -143,6 +152,6 @@ def print_losses(losses):
     stdout.write('       tv loss: %g\n' % losses['total_variation'])
     stdout.write('    total loss: %g\n' % losses['total'])
 
-
+#python train_network.py --style=examples/starry-night-van-gogh.jpg --train-path=/home/shivsundram/train2014 --save-path=./tempt --style_weight=0 --content_weight=1
 if __name__ == '__main__':
     main()
