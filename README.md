@@ -1,9 +1,15 @@
 # Super Resolution
 This is a clone of Shafeen Tejani's code, but now edited so it does superresolution.
-Training of a super resolution network can be done like so:
-python train_network.py --style=examples/starry-night-van-gogh.jpg --train-path=/home/shivsundram/train2014_const --save-path=./temp --style-weight=0 --content-weight=1
+1. First download the pretrained VGG net http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat, and put this in the repo
 
-you will need to have microsoft coco downloaded. When running above command replace the train path with the name of the coco dir. you will also need to create the "temp" directory as the save path, which is also used in above command
+2. Then run this util srcipt to convert coco images. 
+python resizer.py
+It assumes there's a directory called train_2014 containing the coco images, and then stores the images in a dir called train2014_resized.py
+
+3. Training of a super resolution network can be done like so:
+python train_network.py --style=examples/starry-night-van-gogh.jpg --train-path=/home/shivsundram/train2014_resized --save-path=./temp --style-weight=0 --content-weight=1
+
+ When running above command replace the train path with the name of the coco dir. you will also need to create the "temp" directory as the save path, which is also used in above command
 
 # Real-Time Style Transfer
 A TensorFlow implementation of real-time style transfer based on the paper [Perceptual Losses for Real-Time Style Transfer and Super-Resolution](https://arxiv.org/abs/1603.08155) by Johnson et. al.
