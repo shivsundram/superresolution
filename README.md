@@ -3,7 +3,9 @@ This is a clone of Shafeen Tejani's code, but now edited so it does superresolut
 1. First download the pretrained VGG net http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat, and put this in the repo
 
 2. Then run this util srcipt to convert coco images. 
+
 python resizer.py
+
 It assumes there's a directory called train_2014 containing the coco images, and then stores the images in a dir called train2014_resized.py
 
 3. Training of a super resolution network can be done like so:
