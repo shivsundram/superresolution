@@ -19,7 +19,7 @@ class LossCalculator:
         self.transform_loss_net = vgg.net(vgg.preprocess(stylized_image))
 
     def content_loss(self, content_input_batch, content_layer, content_weight):
-        content_input_batch = tf.image.resize_bicubic(content_input_batch, [128,128])
+        content_input_batch = tf.image.resize_bilinear(content_input_batch, [128,128])
         content_loss_net = self.vgg.net(self.vgg.preprocess(content_input_batch))
         print("transform shape", self.transform_loss_net[content_layer].get_shape())
         print ("cont loss shape",content_loss_net[content_layer].get_shape())

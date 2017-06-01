@@ -24,7 +24,7 @@ def net(image):
 def netSuper(image):
     #input x72x72
     image = image / 255.0
-    image = tf.image.resize_bicubic(image, [32, 32])
+    image = tf.image.resize_bilinear(image, [32, 32])
 
     conv1 = _conv_layer(image, 64, 9, 1)
 
