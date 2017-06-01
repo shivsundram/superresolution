@@ -147,11 +147,12 @@ class FastStyleTransfer:
             samples=range(1000*self.batch_size-self.batch_size)
             print("samples", len(content_training_images))
             for epoch in range(epochs):
-                for i in range(0, 1000, self.batch_size):
+                for i in range(0, len(content_training_images), self.batch_size):
+                #for i in range(0, 1000, self.batch_size):
                     print_progress(iterations)
 
-                    batch = self._load_batch(content_training_images[samples[i]: samples[i]+self.batch_size])
-                    
+                    #batch = self._load_batch(content_training_images[samples[i]: samples[i]+self.batch_size])
+                    batch = self._load_batch(content_training_images[i: i+self.batch_size])
 
                     train_step.run(feed_dict={self.input_batch:batch})
 
