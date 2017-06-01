@@ -94,7 +94,7 @@ class FastStyleTransfer:
                                               name="input_batch")
 
             print("input shape", self.input_batch.get_shape())
-            self.input_batch= tf.image.resize_bicubic(self.input_batch, [128,128])
+            #self.input_batch= tf.image.resize_bicubic(self.input_batch, [128,128])
 
             self.stylized_image = transform.netSuper(self.input_batch)
 
