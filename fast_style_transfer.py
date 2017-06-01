@@ -19,11 +19,10 @@ class LossCalculator:
         self.transform_loss_net = vgg.net(vgg.preprocess(stylized_image))
 
     def content_loss(self, content_input_batch, content_layer, content_weight):
-        #print("batch size dim", content_input_batch[0].shape)
         content_input_batch = tf.image.resize_bicubic(content_input_batch, [128,128])
         content_loss_net = self.vgg.net(self.vgg.preprocess(content_input_batch))
-        #print("transform shape", self.transform_loss_net[content_layer].get_shape())
-        #print ("cont loss shape",content_loss_net[content_layer].get_shape())
+        print("transform shape", self.transform_loss_net[content_layer].get_shape())
+        print ("cont loss shape",content_loss_net[content_layer].get_shape())
         return content_weight * (2 * tf.nn.l2_loss(
                 content_loss_net[content_layer] - self.transform_loss_net[content_layer]) /
                 (_tensor_size(content_loss_net[content_layer])))
@@ -94,7 +93,7 @@ class FastStyleTransfer:
                                               name="input_batch")
 
             print("input shape", self.input_batch.get_shape())
-            self.input_batch= tf.image.resize_bicubic(self.input_batch, [128,128])
+            #self.input_batch= tf.image.resize_bicubic(self.input_batch, [72,72])
 
             self.stylized_image = transform.netSuper(self.input_batch)
 
@@ -153,14 +152,7 @@ class FastStyleTransfer:
                     print_progress(iterations)
 
                     batch = self._load_batch(content_training_images[samples[i]: samples[i]+self.batch_size])
-                    #print ("batch type", type(batch), batch.shape)
-                    #a= [i.shape for i in batch]
-                    #print (a)
-                    #resize coco to have uniform dims, pictures in coco have different dims
-                    #ize_tensor = tf.constant(np.array([256,256]))
-                    #batch2 = tf.image.resize_bicubic(batch, size_tensor)
-                    #batch=batch2
-
+                    
 
                     train_step.run(feed_dict={self.input_batch:batch})
 
