@@ -22,9 +22,9 @@ LEARNING_RATE = 1e-3
 NUM_EPOCHS=5
 BATCH_SIZE=4
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
-CHECKPOINT_ITERATIONS = 10
+CHECKPOINT_ITERATIONS = 25
 SAVE_PATH = 'network'
-SAVE_ITERATIONS =10
+SAVE_ITERATIONS =50
 
 def build_parser():
     parser = ArgumentParser()
