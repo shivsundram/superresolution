@@ -8,7 +8,7 @@ import utils
 from argparse import ArgumentParser
 import tensorflow as tf
 import transform
-from stylize_image import ffwd
+from stylize_image import ffwdNoSession
 from histmatch import hist_match
 NETWORK_PATH='./trained'
 
@@ -82,25 +82,56 @@ if __name__ == '__main__':
     #initialize output
     N, H,W,C = X_train.shape 
     enhanced = np.zeros((N,H*4, W*4, C))
+    en = []
     #X_train=X_train.reshape((N,C,H,W)).transpose(0,2,3,1).astype("uint8")
 
-    #generate enhanced samples
-    for i in range(X_train.shape[0]):
-        content_image = X_train[i]
-        content_image = np.squeeze(content_image).reshape(H,W,C)
-        #print(content_image.shape)
-        content_image = np.ndarray.reshape(content_image, (1,) + content_image.shape)
-        prediction = ffwd(content_image, network).reshape((H*4, W*4, C))
-        enhanced[i] = prediction
-        content_image = np.squeeze(content_image).reshape(H,W,C)
-        #print(prediction.shape)
-        for c in range(3):
-            prediction[:, :, c] = hist_match(prediction[:, :, c], content_image[:, :, c])
+    content_image = X_train[0]
+    content_image =np.squeeze(content_image).reshape(H,W,C)
+    content_image = np.ndarray.reshape(content_image, (1,) + content_image.shape)
+    with tf.Session() as sess:
+
+            img_placeholder = tf.placeholder(tf.float32, shape=content_image.shape,
+                                             name='img_placeholder')
+            network1 = transform.netSuper(img_placeholder)
+            saver = tf.train.Saver()
+
+            ckpt = tf.train.get_checkpoint_state(network)
+
+            if ckpt:# and ckpt.model_checkpoint_path:
+                saver.restore(sess, ckpt.model_checkpoint_path)
+            #else:
+            #with tf.Session() as sess:
+            print (sess)
+            #else:
+            #    raise Exception("No checkpoint found...")
+
+            #generate enhanced samples   
+            for i in range(X_train.shape[0]):
+                content_image = X_train[i]
+                content_image = np.squeeze(content_image).reshape(H,W,C)
+                #print(content_image.shape)
+                content_image = np.ndarray.reshape(content_image, (1,) + content_image.shape)
+      
+
+                prediction = sess.run(network1, feed_dict={img_placeholder:content_image})
+                prediction =prediction[0]
+
+
+                #prediction = ffwdNoSession(content_image, network,sess).reshape((H*4, W*4, C))
+                enhanced[i] = prediction
+                content_image = np.squeeze(content_image).reshape(H,W,C)
+                #print(prediction.shape)
+                for c in range(3):
+                    prediction[:, :, c] = hist_match(prediction[:, :, c], content_image[:, :, c])
+
+
+                scipy.misc.imsave('super.jpg', prediction)
+                en.append(prediction)
+                #enhanced[i]=prediction
+                #scipy.misc.imsave('out/'+str(i)+'.jpg', prediction)
+                if i%100==0:
+                    print (100*float(i)/X_train.shape[0])
 
             
-        #scipy.misc.imsave('super.jpg', prediction)
-        enhanced[i]=prediction
-        #img.save('first.png')
-        break
 
 

@@ -70,5 +70,24 @@ def ffwd(content, network_path):
         prediction = sess.run(network, feed_dict={img_placeholder:content})
         return prediction[0]
 
+def ffwdNoSession(content, network_path, sess):
+
+    img_placeholder = tf.placeholder(tf.float32, shape=content.shape,
+                                     name='img_placeholder')
+
+    network = transform.netSuper(img_placeholder)
+    saver = tf.train.Saver()
+
+    ckpt = tf.train.get_checkpoint_state(network_path)
+
+    if ckpt and ckpt.model_checkpoint_path:
+        saver.restore(sess, ckpt.model_checkpoint_path)
+    else:
+        raise Exception("No checkpoint found...")
+
+    prediction = sess.run(network, feed_dict={img_placeholder:content})
+    return prediction[0]
+
+
 if __name__ == '__main__':
     main()
