@@ -118,12 +118,12 @@ if __name__ == '__main__':
 
 
                 #prediction = ffwdNoSession(content_image, network,sess).reshape((H*4, W*4, C))
-                enhanced[i] = prediction
                 content_image = np.squeeze(content_image).reshape(H,W,C)
                 #print(prediction.shape)
                 for c in range(3):
                     prediction[:, :, c] = hist_match(prediction[:, :, c], content_image[:, :, c])
 
+                enhanced[i] = prediction
 
                 #scipy.misc.imsave('super.jpg', prediction)
                 #en.append(prediction)
