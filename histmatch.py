@@ -6,12 +6,6 @@ import numpy as np
 from scipy.misc import imread, imsave
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--template', required=True) # Low-res images
-parser.add_argument('--source', required=True)   # Outputs from CNN
-parser.add_argument('--output', required=True)
-args = parser.parse_args()
-
 
 
 def main():
@@ -56,8 +50,8 @@ def hist_match(source, template):
     """
 
     oldshape = source.shape
-    source = source.ravel()
-    template = template.ravel()
+    #source = source.ravel()
+    #template = template.ravel()
 
     # get the set of unique pixel values and their corresponding indices and
     # counts
@@ -81,4 +75,11 @@ def hist_match(source, template):
   
   
 if __name__ == '__main__':
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--template', required=True) # Low-res images
+  parser.add_argument('--source', required=True)   # Outputs from CNN
+  parser.add_argument('--output', required=True)
+  args = parser.parse_args()
+
+
   main()
