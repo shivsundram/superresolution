@@ -125,12 +125,15 @@ if __name__ == '__main__':
                     prediction[:, :, c] = hist_match(prediction[:, :, c], content_image[:, :, c])
 
 
-                scipy.misc.imsave('super.jpg', prediction)
-                en.append(prediction)
+                #scipy.misc.imsave('super.jpg', prediction)
+                #en.append(prediction)
                 #enhanced[i]=prediction
-                #scipy.misc.imsave('out/'+str(i)+'.jpg', prediction)
+                scipy.misc.imsave('out/'+str(i)+'.jpg', prediction)
+                scipy.misc.imsave('out/'+str(i)+'small.jpg', content_image)
                 if i%100==0:
                     print (100*float(i)/X_train.shape[0])
+                #output array is enhanced
+            np.save("enhanced", enhanced)
 
             
 
