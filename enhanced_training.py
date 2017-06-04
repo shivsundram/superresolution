@@ -96,7 +96,10 @@ if __name__ == '__main__':
         #print(prediction.shape)
         for c in range(3):
             prediction[:, :, c] = hist_match(prediction[:, :, c], content_image[:, :, c])
-        scipy.misc.imsave('super.jpg', prediction)
+
+            
+        #scipy.misc.imsave('super.jpg', prediction)
+        enhanced[i]=prediction
         #img.save('first.png')
         break
 
