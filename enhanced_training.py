@@ -11,7 +11,7 @@ import transform
 from stylize_image import ffwdNoSession
 from histmatch import hist_match
 NETWORK_PATH='./trained'
-
+import sys
 
 #tensor flow training
 from cs231n.data_utils import load_CIFAR10
@@ -63,13 +63,24 @@ if __name__ == '__main__':
                         help='path for output',
                         metavar='OUTPUT_PATH', default = '.')
 
+    parser.add_argument('--use_train', action='store_true')
+
+    parser.add_argument('--use_test', action='store_true')
+
+
+
+
+
     #python enhanced_training.py --source=
 
     # parse and get network directory
     options = parser.parse_args()
     network = options.network_path
     source = options.content_path
-
+    print(options.use_train, options.use_test)
+    if not (options.use_train or options.use_test): 
+        print("need to specity --use-train or --use-test")
+        sys.exit()    
     #get cifar10
     X_train, y_train, X_val, y_val, X_test, y_test = get_CIFAR10_data(source)
     print('Train data shape: ', X_train.shape)
@@ -80,12 +91,22 @@ if __name__ == '__main__':
     print('Test labels shape: ', y_test.shape)
 
     #initialize output
-    N, H,W,C = X_train.shape 
+    data=None
+    if (options.use_train):
+        data = X_train
+        output_dir = "out/"
+        out_type = "train"
+    elif (options.use_test):
+        data = X_test
+        output_dir = "out_test/"
+        out_type="test"
+
+    N, H,W,C = data.shape 
     enhanced = np.zeros((N,H*4, W*4, C))
     en = []
     #X_train=X_train.reshape((N,C,H,W)).transpose(0,2,3,1).astype("uint8")
 
-    content_image = X_train[0]
+    content_image = data[0]
     content_image =np.squeeze(content_image).reshape(H,W,C)
     content_image = np.ndarray.reshape(content_image, (1,) + content_image.shape)
     with tf.Session() as sess:
@@ -106,8 +127,8 @@ if __name__ == '__main__':
             #    raise Exception("No checkpoint found...")
 
             #generate enhanced samples   
-            for i in range(X_train.shape[0]):
-                content_image = X_train[i]
+            for i in range(data.shape[0]):
+                content_image = data[i]
                 content_image = np.squeeze(content_image).reshape(H,W,C)
                 #print(content_image.shape)
                 content_image = np.ndarray.reshape(content_image, (1,) + content_image.shape)
@@ -115,26 +136,26 @@ if __name__ == '__main__':
 
                 prediction = sess.run(network1, feed_dict={img_placeholder:content_image})
                 prediction =prediction[0]
-
+ 
 
                 #prediction = ffwdNoSession(content_image, network,sess).reshape((H*4, W*4, C))
                 content_image = np.squeeze(content_image).reshape(H,W,C)
                 #print(prediction.shape)
                 for c in range(3):
                     prediction[:, :, c] = hist_match(prediction[:, :, c], content_image[:, :, c])
-
+                #print(prediction)
                 enhanced[i] = prediction
 
                 #scipy.misc.imsave('super.jpg', prediction)
                 #en.append(prediction)
                 #enhanced[i]=prediction
-                scipy.misc.imsave('out/'+str(i)+'.jpg', prediction.astype(np.uint8))
+                scipy.misc.imsave(output_dir+str(i)+'.jpg', prediction.astype(np.uint8))
                 #scipy.misc.imsave('out/'+str(i)+'small.jpg', content_image)
                 if i%100==0:
-                    print (100*float(i)/X_train.shape[0])
+                    print (100*float(i)/data.shape[0])
                 #output array is enhanced
             un8 = enhanced.astype(np.uint8)
-            np.save("enhanced", un8)
+            np.save("enhanced"+out_type, un8)
 
             
 
