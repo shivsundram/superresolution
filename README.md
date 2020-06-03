@@ -1,5 +1,11 @@
 # Super Resolution
-This is a clone of Shafeen Tejani's code, but now edited so it does superresolution.
+Citation: This is a clone of Shafeen Tejani's perceptual loss-driven style transfer code, but now edited so it does superresolution 
+
+Original code: https://github.com/ShafeenTejani/fast-style-transfer 
+
+Paper from Justin Johnson describing the algorithm (for both style transfer and superresultion)
+
+
 1. First download the pretrained VGG net http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat, and put this in the repo
 
 2. Then run this util srcipt to convert coco images. 
