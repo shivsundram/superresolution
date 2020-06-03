@@ -5,6 +5,7 @@ Original code: https://github.com/ShafeenTejani/fast-style-transfer
 
 Paper from Justin Johnson describing the algorithm (for both style transfer and superresultion)
 
+Directions:
 
 1. First download the pretrained VGG net http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat, and put this in the repo
 
