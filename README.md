@@ -3,7 +3,7 @@ Citation: This is a clone of Shafeen Tejani's perceptual loss-driven style trans
 
 Original code: https://github.com/ShafeenTejani/fast-style-transfer 
 
-Paper from Justin Johnson describing the algorithm (for both style transfer and superresultion)
+Paper from Justin Johnson describing the algorithm (for both style transfer and superresultion): https://arxiv.org/abs/1603.08155
 
 Directions:
 
